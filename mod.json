@@ -1,0 +1,7 @@
+{
+    "BaseDir": "",
+    "EntryPoint": "TiltShift.Main",
+    "IsDevelopment": true,
+    "Name": "Tilt Shift",
+    "Project": "TiltShift.csproj"
+}
