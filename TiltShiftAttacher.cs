@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 
 namespace TiltShift
@@ -8,14 +9,16 @@ namespace TiltShift
     {
         public string Path;
 
-        void Start()
+        public TiltShift TiltShift;
+
+        public void Attach()
         {
             StartCoroutine(SetTiltShift());
         }
 
         private IEnumerator SetTiltShift()
         {
-            using (WWW www = new WWW(@"file://" + Path + "/ab/shader"))
+            using (WWW www = new WWW(@"file://" + System.IO.Path.Combine(System.IO.Path.Combine(Path, "ab"),"shader")))
             {
                 yield return www;
 
@@ -26,11 +29,24 @@ namespace TiltShift
 
                 Shader s = bundle.LoadAsset<Shader>("TiltShiftHdrLensBlur");
 
-                TiltShift ts = Camera.main.gameObject.AddComponent<TiltShift>();
+                TiltShift = Camera.main.gameObject.AddComponent<TiltShift>();
 
-                ts.tiltShiftShader = s;
-                ts.quality = TiltShift.TiltShiftQuality.High;
-                ts.blurArea = 2;
+                TiltShift.tiltShiftShader = s;
+                TiltShift.quality = TiltShift.TiltShiftQuality.High;
+
+                // check if ini exists, if it does load the settings from it, otherwise set defaults
+                if (File.Exists(Path + @"/settings.ini"))
+                {
+                    IniFile ini = new IniFile(Path + @"/settings.ini");
+
+                    TiltShift.blurArea = float.Parse(ini.IniReadValue("General", "blur_area"));
+                    TiltShift.maxBlurSize = float.Parse(ini.IniReadValue("General", "max_blur_size"));
+                    TiltShift.downsample = int.Parse(ini.IniReadValue("General", "downsample"));
+                }
+                else
+                {
+                    TiltShift.blurArea = 2;
+                }
 
                 bundle.Unload(false);
             }
